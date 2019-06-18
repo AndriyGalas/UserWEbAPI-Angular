@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using UserProject.Models.Interfaces;
 
 namespace UserProject.Models.Services
@@ -16,9 +17,10 @@ namespace UserProject.Models.Services
         }
 
 
-        public IEnumerable<UserModel> GetAll()
+        public async Task<ICollection<UserModel>> GetAll()
         {
-            return appDbContext.Users.ToList();
+            var allUsers = await appDbContext.Users.ToListAsync();
+            return allUsers;
         }
 
         public async Task<UserModel> GetById(int id)
@@ -45,7 +47,7 @@ namespace UserProject.Models.Services
 
         public async Task Update(int id, UserModel item)
         {
-            var userModel = appDbContext.Users.Find(id);
+            var userModel = await appDbContext.Users.FindAsync(id);
 
             userModel.Name = item.Name;
             userModel.Email = item.Email;
@@ -54,8 +56,7 @@ namespace UserProject.Models.Services
             userModel.IsDisabled = item.IsDisabled;
             userModel.IsMale = item.IsMale;
             userModel.MobileNumber = item.MobileNumber;
-
-            appDbContext.Users.Update(item);
+            
             await appDbContext.SaveChangesAsync();
 
         }

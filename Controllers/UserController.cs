@@ -26,15 +26,17 @@ namespace UserProject.Controllers
         }
 
         [HttpGet]
-        public IQueryable<UserModel> GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
-            return _context.Users;
+            var allUsers = await userService.GetAll();
+
+            return Ok(allUsers);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<UserModel>> GetUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await userService.GetById(id);
 
             if (user == null)
             {
@@ -47,8 +49,7 @@ namespace UserProject.Controllers
         [HttpPost]
         public async Task<ActionResult<UserModel>> PostUser([FromBody]UserModel user)
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            await userService.Add(user);
 
             return CreatedAtAction("GetUser", new { id = user.Id }, user);
         }
@@ -61,23 +62,7 @@ namespace UserProject.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(user).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            await userService.Update(id, user);
 
             return NoContent();
         }
